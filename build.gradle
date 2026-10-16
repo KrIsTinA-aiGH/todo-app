@@ -1,4 +1,5 @@
 plugins {
+    id 'maven-publish'
     id 'java'
     id 'application'
     id 'com.gradleup.shadow' version '8.3.10'
@@ -60,4 +61,33 @@ tasks.named('startScripts') {
 
 tasks.named('build') {
     dependsOn tasks.named('shadowJar')
+}
+publishing {
+    publications {
+        shadow(MavenPublication) {
+            groupId = project.group.toString()
+            artifactId = 'todo-app'
+            version = project.version.toString()
+
+            artifact(tasks.named('shadowJar'))
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'GitHubPackages'
+
+            def repositoryName = System.getenv('GITHUB_REPOSITORY')
+                    ?.toLowerCase()
+
+            url = uri(
+                    "https://maven.pkg.github.com/${repositoryName ?: 'OWNER/REPOSITORY'}"
+            )
+
+            credentials {
+                username = System.getenv('GITHUB_ACTOR')
+                password = System.getenv('GITHUB_TOKEN')
+            }
+        }
+    }
 }
